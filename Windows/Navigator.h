@@ -5,6 +5,7 @@
 
 class ActivateWindow;
 class MainWindow;
+class SettingsWindow;
 
 class Navigator : public QObject 
 {
@@ -17,8 +18,10 @@ public:
 private slots:
 	void onBack();
 	void onActivate();
+	void onSettings();
 
 private:
-	std::unique_ptr<MainWindow> mainWindow;
-	std::unique_ptr<ActivateWindow> activateWindow;
+	MainWindow* mainWindow;
+	ActivateWindow* activateWindow;
+	SettingsWindow* settingsWindow;
 };

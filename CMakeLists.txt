@@ -20,7 +20,7 @@ set(CMAKE_ AUTORCC ON)
 add_executable(JoystickMouse
     JoystickMouse.cpp
  "Windows/MainWindow.cpp" 
- "Windows/MainWindow.h" "Windows/Navigator.cpp" "Windows/Navigator.h" "Windows/ActivateWindow.cpp" "Windows/ActivateWindow.h")
+ "Windows/MainWindow.h" "Windows/Navigator.cpp" "Windows/Navigator.h" "Windows/ActivateWindow.cpp" "Windows/ActivateWindow.h" "Windows/SettingsWindow.cpp" "Windows/SettingsWindow.h" "Widgets/JoystickVisualizer.cpp" "Widgets/JoystickVisualizer.h")
 
 # ------------------------
 # Link Qt Lib

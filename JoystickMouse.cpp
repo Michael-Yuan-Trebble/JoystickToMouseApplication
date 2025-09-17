@@ -8,6 +8,8 @@ int main(int argc, char* argv[])
 		std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+
+
 	QApplication app(argc, argv);
 	QApplication::setStyle("Fusion");
 

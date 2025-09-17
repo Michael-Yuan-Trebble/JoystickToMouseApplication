@@ -1,6 +1,7 @@
 #include "Navigator.h"
 #include "MainWindow.h"
 #include "ActivateWindow.h"
+#include "SettingsWindow.h"
 
 Navigator::Navigator(QObject* parent) : QObject(parent) { }
 
@@ -12,8 +13,8 @@ Navigator::~Navigator() = default;
 
 void Navigator::start()
 {
-	mainWindow = std::make_unique<MainWindow>();
-	connect(mainWindow.get(), &MainWindow::start, this, &Navigator::onActivate);
+	mainWindow = new MainWindow();
+	connect(mainWindow, &MainWindow::start, this, &Navigator::onActivate);
 	mainWindow->show();
 }
 
@@ -26,11 +27,13 @@ void Navigator::onActivate()
 	if (mainWindow) 
 	{
 		mainWindow->close();
-		mainWindow.reset();
+		mainWindow->deleteLater();
+		mainWindow = nullptr;
 	}
 
-	activateWindow = std::make_unique<ActivateWindow>();
-	connect(activateWindow.get(), &ActivateWindow::goBack, this, &Navigator::onBack);
+	activateWindow = new ActivateWindow();
+	connect(activateWindow, &ActivateWindow::goBack, this, &Navigator::onBack);
+	connect(activateWindow, &ActivateWindow::goSettings, this, &Navigator::onSettings);
 	activateWindow->show();
 }
 
@@ -43,9 +46,24 @@ void Navigator::onBack()
 	if (activateWindow) 
 	{
 		activateWindow->close();
-		activateWindow.reset();
+		activateWindow->deleteLater();
+		activateWindow = nullptr;
 	}
-	mainWindow = std::make_unique<MainWindow>();
-	connect(mainWindow.get(), &MainWindow::start, this, &Navigator::onActivate);
+	mainWindow = new MainWindow();
+	connect(mainWindow, &MainWindow::start, this, &Navigator::onActivate);
 	mainWindow->show();
+}
+
+void Navigator::onSettings() {
+	settingsWindow = new SettingsWindow(activateWindow);
+	settingsWindow->setWindowModality(Qt::WindowModal);
+	settingsWindow->setWindowTitle("Settings");
+	activateWindow->setEnabled(false);
+	connect(settingsWindow, &SettingsWindow::destroyed, this, [this]() 
+		{
+		activateWindow->setEnabled(true);
+		}
+	);
+		
+	settingsWindow->show();
 }

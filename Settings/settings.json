@@ -1,0 +1,8 @@
+{
+    "dead_zone": 6000,
+    "keybinds": {
+        "left_click": 0,
+        "right_click": 1
+    },
+    "sensitivity": 5e-04
+}
