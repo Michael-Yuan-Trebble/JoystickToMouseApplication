@@ -21,7 +21,7 @@ class ActivateWindow : public QMainWindow
 	Q_OBJECT
 public:
 	explicit ActivateWindow(QWidget* parent = nullptr);
-
+	void loadSettings();
 signals:
 	void goBack();
 	void goSettings();
@@ -35,6 +35,8 @@ private:
 	QPushButton* settingsbtn;
 	QLabel* ButtonPressed;
 
+	QString Filepath;
+	QJsonObject obj;
 	// ------------------
 	// SDL Variables
 	// ------------------
@@ -61,10 +63,9 @@ private:
 
 	void setJoystick(int index, SDL_JoystickID* joysticks);
 	void setMovement();
-	void checkSettings(const QString& configPath);
-	QJsonObject loadSettings(const QString& configPath);
-	void saveSettings(const QString& configPath, const QJsonObject& obj);
-	void initSettings(const QJsonObject& obj);
+	void checkSettings();
+	void saveSettings();
+	void initSettings();
 	void changeCircle(int x, int y);
 
 };

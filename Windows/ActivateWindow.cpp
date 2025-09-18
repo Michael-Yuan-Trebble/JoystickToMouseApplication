@@ -32,13 +32,11 @@ ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 	QString exeDir = QCoreApplication::applicationDirPath();
 	QString configDir = exeDir + "/Settings";
 	QDir().mkpath(configDir);
-	QString Filepath = configDir + "/settings.json";
+	Filepath = configDir + "/settings.json";
 	
-	checkSettings(Filepath);
-
-	QJsonObject settings = loadSettings(Filepath);
-
-	saveSettings(Filepath, settings);
+	checkSettings();
+	loadSettings();
+	saveSettings();
 
 	// ------------------
 	// Start SDL Joystick Functions
@@ -61,10 +59,15 @@ ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 	}
 }
 
-void ActivateWindow::checkSettings(const QString& configPath)
+// ------------------
+// JSON Functions
+// ------------------
+
+
+void ActivateWindow::checkSettings()
 {
-	QDir().mkpath(QFileInfo(configPath).absolutePath());
-	QFile file(configPath);
+	QDir().mkpath(QFileInfo(Filepath).absolutePath());
+	QFile file(Filepath);
 	if (!file.exists())
 	{
 		QJsonObject defaults;
@@ -85,32 +88,29 @@ void ActivateWindow::checkSettings(const QString& configPath)
 	}
 }
 
-// ------------------
-// JSON Functions
-// ------------------
-
-QJsonObject ActivateWindow::loadSettings(const QString& configPath)
-{
-	QFile file(configPath);
-	if (!file.open(QIODevice::ReadOnly)) return {};
-	QByteArray data = file.readAll();
-	QJsonDocument doc = QJsonDocument::fromJson(data);
-	initSettings(doc.object());
-	return doc.object();
-}
-
-void ActivateWindow::initSettings(const QJsonObject& obj) 
+void ActivateWindow::initSettings()
 {
 	SENSITIVITY = obj["sensitivity"].toDouble();
 	DEAD_ZONE = obj["dead_zone"].toInt();
 	SCROLL_SENSITIVITY = obj["scroll_sensitivity"].toDouble();
-	Left_Click = obj["left_click"].toInt();
-	Right_Click = obj["right_click"].toInt();
+	QJsonObject keybinds = obj["keybinds"].toObject();
+	Left_Click = keybinds["left_click"].toInt();
+	Right_Click = keybinds["right_click"].toInt();
 }
 
-void ActivateWindow::saveSettings(const QString& configPath, const QJsonObject& obj)
+void ActivateWindow::loadSettings()
 {
-	QFile file(configPath);
+	QFile file(Filepath);
+	if (!file.open(QIODevice::ReadOnly)) return;
+	QByteArray data = file.readAll();
+	QJsonDocument doc = QJsonDocument::fromJson(data);
+	obj = doc.object();
+	initSettings();
+}
+
+void ActivateWindow::saveSettings()
+{
+	QFile file(Filepath);
 	if (!file.open(QIODevice::WriteOnly)) return;
 	QJsonDocument doc(obj);
 	file.write(doc.toJson());
@@ -123,7 +123,7 @@ void ActivateWindow::setJoystick(int index, SDL_JoystickID* joysticks)
 }
 
 void ActivateWindow::changeCircle(int x, int y) {
-	float normX = x / 32767.0f;
+	float normX = x / (32767.0f * 2.f);
 	float normY = y / 32767.0f;
 	Visual->setPosition(normX, normY);
 }
@@ -140,31 +140,34 @@ void ActivateWindow::setMovement()
 
 	while (SDL_PollEvent(&event))
 	{
-		if (event.type == SDL_EVENT_QUIT) close();
-
-		if (event.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN)
+		switch (event.type)
 		{
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 			if (event.jbutton.button == Left_Click)
 				mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 			if (event.jbutton.button == Right_Click)
 				mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
+
 			if ((int)event.jbutton.button != lastButtonIndex)
 			{
-				// TODO: Move to settings page
 				lastButtonIndex = (int)event.jbutton.button;
 				ButtonPressed->setText("Button Pressed: " + QString::number(lastButtonIndex));
 			}
-		}
-		if (event.type == SDL_EVENT_JOYSTICK_BUTTON_UP)
-		{
-			if (event.jbutton.button == 0)
-			{
+			break;
+
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
+			if (event.jbutton.button == Left_Click)
 				mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-			}
-		}
-		if (event.type == SDL_EVENT_JOYSTICK_HAT_MOTION)
-		{
+			if (event.jbutton.button == Right_Click)
+				mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+			break;
+
+		case SDL_EVENT_JOYSTICK_HAT_MOTION:
 			hatState = event.jhat.value;
+			break;
+
+		default:
+			break;
 		}
 	}
 

@@ -8,6 +8,9 @@
 #include <vector>
 #include <qboxlayout.h>
 #include <qwidget.h>
+#include <qjsonobject.h>
+#include <qbytearray.h>
+#include <qjsondocument.h>
 #include <qlabel.h>
 #include <qboxlayout.h>
 
@@ -21,8 +24,21 @@ class SettingsWindow : public QMainWindow
 public:
 	explicit SettingsWindow(QWidget* parent = nullptr);
 
-signals:
+private slots:
+	void changeLeft();
+
+	void changeRight();
 
 private:
+	QJsonObject obj;
 
+	Uint8 lastButton = -1;
+
+	void loadSettings();
+
+	void saveKeybind();
+
+	QPushButton* leftButton;
+
+	QPushButton* rightButton;
 };

@@ -55,13 +55,13 @@ void Navigator::onBack()
 }
 
 void Navigator::onSettings() {
-	settingsWindow = new SettingsWindow(activateWindow);
+	settingsWindow = new SettingsWindow(nullptr);
 	settingsWindow->setWindowModality(Qt::WindowModal);
 	settingsWindow->setWindowTitle("Settings");
-	activateWindow->setEnabled(false);
 	connect(settingsWindow, &SettingsWindow::destroyed, this, [this]() 
 		{
-		activateWindow->setEnabled(true);
+			activateWindow->setEnabled(true);
+			activateWindow->loadSettings();
 		}
 	);
 		
