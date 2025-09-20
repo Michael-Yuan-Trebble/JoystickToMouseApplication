@@ -22,6 +22,10 @@ class ActivateWindow : public QMainWindow
 public:
 	explicit ActivateWindow(QWidget* parent = nullptr);
 	void loadSettings();
+
+	Uint8 Left_Click;
+	Uint8 Right_Click;
+
 signals:
 	void goBack();
 	void goSettings();
@@ -34,6 +38,8 @@ private:
 	QPushButton* push;
 	QPushButton* settingsbtn;
 	QLabel* ButtonPressed;
+	QLabel* LeftClickLabel;
+	QLabel* RightClickLabel;
 
 	QString Filepath;
 	QJsonObject obj;
@@ -42,9 +48,6 @@ private:
 	// ------------------
 
 	SDL_Joystick* ControlledJoystick;
-
-	Uint8 Left_Click;
-	Uint8 Right_Click;
 
 	// ------------------
 	// Standard Variables
@@ -64,7 +67,6 @@ private:
 	void setJoystick(int index, SDL_JoystickID* joysticks);
 	void setMovement();
 	void checkSettings();
-	void saveSettings();
 	void initSettings();
 	void changeCircle(int x, int y);
 

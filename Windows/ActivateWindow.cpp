@@ -8,11 +8,22 @@
 
 ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 {
+	QString exeDir = QCoreApplication::applicationDirPath();
+	QString configDir = exeDir + "/Settings";
+	QDir().mkpath(configDir);
+	Filepath = configDir + "/settings.json";
+
 	this->resize(800, 800);
 	QWidget* central = new QWidget(this);
 	QVBoxLayout* layout = new QVBoxLayout(central);
 	ButtonPressed = new QLabel("Button Pressed: ", this);
 	layout->addWidget(ButtonPressed);
+
+	checkSettings();
+	loadSettings();
+
+	layout->addWidget(LeftClickLabel);
+	layout->addWidget(RightClickLabel);
 
 	Visual = new JoystickVisualizer(this);
 	layout->addWidget(Visual);
@@ -28,15 +39,6 @@ ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 
 	setCentralWidget(central);
 	setWindowTitle("Active");
-
-	QString exeDir = QCoreApplication::applicationDirPath();
-	QString configDir = exeDir + "/Settings";
-	QDir().mkpath(configDir);
-	Filepath = configDir + "/settings.json";
-	
-	checkSettings();
-	loadSettings();
-	saveSettings();
 
 	// ------------------
 	// Start SDL Joystick Functions
@@ -96,6 +98,15 @@ void ActivateWindow::initSettings()
 	QJsonObject keybinds = obj["keybinds"].toObject();
 	Left_Click = keybinds["left_click"].toInt();
 	Right_Click = keybinds["right_click"].toInt();
+
+	if (LeftClickLabel || RightClickLabel) {
+		LeftClickLabel = new QLabel("Left Click Button: " + QString::number(Left_Click), this);
+		RightClickLabel = new QLabel("Right Click Button: " + QString::number(Right_Click), this);
+	}
+	else {
+		LeftClickLabel->setText("Left Click Button: " + QString::number(Left_Click));
+		RightClickLabel->setText("Right Click Button: " + QString::number(Right_Click));
+	}
 }
 
 void ActivateWindow::loadSettings()
@@ -107,15 +118,6 @@ void ActivateWindow::loadSettings()
 	obj = doc.object();
 	initSettings();
 }
-
-void ActivateWindow::saveSettings()
-{
-	QFile file(Filepath);
-	if (!file.open(QIODevice::WriteOnly)) return;
-	QJsonDocument doc(obj);
-	file.write(doc.toJson());
-}
-
 // TODO: Currently only sets joystick to first one detected, make it changeable
 void ActivateWindow::setJoystick(int index, SDL_JoystickID* joysticks) 
 {

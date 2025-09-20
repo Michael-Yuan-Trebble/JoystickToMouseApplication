@@ -12,6 +12,7 @@
 #include <qbytearray.h>
 #include <qjsondocument.h>
 #include <qlabel.h>
+#include <qcoreapplication.h>
 #include <qboxlayout.h>
 
 class QPushButton;
@@ -28,6 +29,12 @@ private slots:
 	void changeLeft();
 
 	void changeRight();
+
+signals:
+	void settingsClosed();
+
+protected:
+	void closeEvent(QCloseEvent* event) override;
 
 private:
 	QJsonObject obj;

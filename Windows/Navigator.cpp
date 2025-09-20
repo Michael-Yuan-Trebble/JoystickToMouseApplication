@@ -58,10 +58,11 @@ void Navigator::onSettings() {
 	settingsWindow = new SettingsWindow(nullptr);
 	settingsWindow->setWindowModality(Qt::WindowModal);
 	settingsWindow->setWindowTitle("Settings");
-	connect(settingsWindow, &SettingsWindow::destroyed, this, [this]() 
+	connect(settingsWindow, &SettingsWindow::settingsClosed, this, [this]() 
 		{
 			activateWindow->setEnabled(true);
 			activateWindow->loadSettings();
+			qDebug() << "Left Click: " << activateWindow->Left_Click << "Right Click: " << activateWindow->Right_Click;
 		}
 	);
 		

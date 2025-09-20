@@ -1,7 +1,6 @@
 #include "SettingsWindow.h"
 #include <qpushbutton.h>
 #include <qfile.h>
-#include <qcoreapplication.h>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QMainWindow(parent) 
 {
@@ -50,12 +49,14 @@ void SettingsWindow::loadSettings()
 void SettingsWindow::changeLeft() 
 {
 	QTimer* timer = new QTimer(this);
-	connect(timer, &QTimer::timeout, this, [this, timer]() {
+	connect(timer, &QTimer::timeout, this, [this, timer]() 
+		{
 		SDL_Event event;
 		QJsonObject keybinds = obj["keybinds"].toObject();
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN) {
+			if (event.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN) 
+			{
 				keybinds["left_click"] = event.jbutton.button;
 				obj["keybinds"] = keybinds;
 				leftButton->setText(QString::number(event.jbutton.button));
@@ -72,7 +73,8 @@ void SettingsWindow::changeLeft()
 void SettingsWindow::changeRight() 
 {
 	QTimer* timer = new QTimer(this);
-	connect(timer, &QTimer::timeout, this, [this, timer]() {
+	connect(timer, &QTimer::timeout, this, [this, timer]() 
+		{
 		SDL_Event event;
 		QJsonObject keybinds = obj["keybinds"].toObject();
 		while (SDL_PollEvent(&event))
@@ -91,7 +93,8 @@ void SettingsWindow::changeRight()
 	timer->start(5);
 }
 
-void SettingsWindow::saveKeybind() {
+void SettingsWindow::saveKeybind() 
+{
 	QString exeDir = QCoreApplication::applicationDirPath();
 	QString configDir = exeDir + "/Settings";
 	QString Filepath = configDir + "/settings.json";
@@ -99,4 +102,10 @@ void SettingsWindow::saveKeybind() {
 	file.open(QIODevice::WriteOnly | QIODevice::Truncate);
 	file.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
 	file.close();
+}
+
+void SettingsWindow::closeEvent(QCloseEvent* event) 
+{
+	emit settingsClosed();
+	QMainWindow::closeEvent(event);
 }
