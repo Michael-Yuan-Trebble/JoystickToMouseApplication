@@ -62,7 +62,6 @@ void Navigator::onSettings() {
 		{
 			activateWindow->setEnabled(true);
 			activateWindow->loadSettings();
-			qDebug() << "Left Click: " << activateWindow->Left_Click << "Right Click: " << activateWindow->Right_Click;
 		}
 	);
 		

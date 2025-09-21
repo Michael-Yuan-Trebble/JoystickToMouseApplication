@@ -1,6 +1,8 @@
 #include "SettingsWindow.h"
 #include <qpushbutton.h>
 #include <qfile.h>
+#include <qlineedit.h>
+#include <qvalidator.h>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QMainWindow(parent) 
 {
@@ -10,6 +12,7 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QMainWindow(parent)
 	QVBoxLayout* mainLayout = new QVBoxLayout(central);
 	QVBoxLayout* firstSetting = new QVBoxLayout();
 	QVBoxLayout* secondSetting = new QVBoxLayout();
+	QVBoxLayout* thirdSetting = new QVBoxLayout();
 
 	QJsonObject keybinds = obj["keybinds"].toObject();
 
@@ -24,14 +27,38 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QMainWindow(parent)
 	rightButton = new QPushButton(QString::number(keybinds["right_click"].toInt()), this);
 	connect(rightButton, &QPushButton::clicked, this, &SettingsWindow::changeRight);
 
-
 	secondSetting->addWidget(rightLabel);
 	secondSetting->addWidget(rightButton);
 
+	QLabel* Sensitivity = new QLabel("Sensitivity", this);
+
+	SensitivityEdit = new QLineEdit(this);
+	QDoubleValidator* validator = new QDoubleValidator(0.0, 1.0,3, SensitivityEdit);
+	SensitivityEdit->setPlaceholderText("Enter a value between 0.000 and 1.000");
+	SensitivityEdit->setValidator(validator);
+
+	QPushButton* SensitivtyBtn = new QPushButton("Set", SensitivityEdit);
+
+	connect(SensitivityEdit, &QLineEdit::returnPressed, this, &SettingsWindow::saveSensitivity);
+	connect(SensitivtyBtn, &QPushButton::clicked, this, &SettingsWindow::saveSensitivity);
+	thirdSetting->addWidget(Sensitivity);
+	thirdSetting->addWidget(SensitivityEdit);
+	thirdSetting->addWidget(SensitivtyBtn);
+
 	mainLayout->addLayout(firstSetting);
 	mainLayout->addLayout(secondSetting);
+	mainLayout->addLayout(thirdSetting);
 	setCentralWidget(central);
 
+}
+
+void SettingsWindow::saveSensitivity() 
+{
+	if (!SensitivityEdit->text().isEmpty() && SensitivityEdit->hasAcceptableInput()) 
+	{
+		obj["sensitivity"] = SensitivityEdit->text().toDouble();
+		saveKeybind();
+	}
 }
 
 void SettingsWindow::loadSettings() 

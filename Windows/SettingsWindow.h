@@ -18,6 +18,7 @@
 class QPushButton;
 class QLabel;
 class QWidget;
+class QLineEdit;
 
 class SettingsWindow : public QMainWindow
 {
@@ -45,7 +46,11 @@ private:
 
 	void saveKeybind();
 
+	void saveSensitivity();
+
 	QPushButton* leftButton;
 
 	QPushButton* rightButton;
+
+	QLineEdit* SensitivityEdit;
 };

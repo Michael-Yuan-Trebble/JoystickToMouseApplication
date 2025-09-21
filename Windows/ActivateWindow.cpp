@@ -80,6 +80,8 @@ void ActivateWindow::checkSettings()
 		QJsonObject keybinds;
 		keybinds["left_click"] = 0;
 		keybinds["right_click"] = 1;
+		keybinds["DPI_up"] = 2;
+		keybinds["DPI_down"] = 3;
 		defaults["keybinds"] = keybinds;
 
 		QJsonDocument doc(defaults);
@@ -125,8 +127,8 @@ void ActivateWindow::setJoystick(int index, SDL_JoystickID* joysticks)
 }
 
 void ActivateWindow::changeCircle(int x, int y) {
-	float normX = x / (32767.0f * 2.f);
-	float normY = y / 32767.0f;
+	float normX = static_cast<float>(x) / 32767.0f;
+	float normY = static_cast<float>(y) / 32767.0f;
 	Visual->setPosition(normX, normY);
 }
 
