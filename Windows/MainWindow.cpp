@@ -4,6 +4,7 @@
 #include <qlabel.h>
 #include <qpushbutton.h>
 #include <qboxlayout.h>
+#include <qcombobox.h>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) 
 {
@@ -14,6 +15,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     // ------------------
 
     QTimer* sdlTimer = new QTimer(this);
+    combo = new QComboBox();
     connect(sdlTimer, &QTimer::timeout, this, [this]()
         {
         SDL_Event e;
@@ -32,11 +34,21 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     sdlTimer->start(16);
 
     startBtn = new QPushButton("Start Joystick Control", this);
-    connect(startBtn, &QPushButton::clicked, this, &MainWindow::start);
-    allJoysticks = new QLabel("All Joysticks: ", this);
+
+    connect(startBtn, &QPushButton::clicked, this, [this]() 
+    {
+        SDL_JoystickID deviceID = (SDL_JoystickID)combo->currentData().toULongLong();
+        SDL_Joystick* joystick = SDL_OpenJoystick(deviceID);
+        if (!joystick) 
+        {
+            qDebug() << "Failed to open joystick:" << SDL_GetError();
+            return;
+        }
+        emit start(joystick);
+    });
 
     layout->addWidget(startBtn);
-    layout->addWidget(allJoysticks);
+    layout->addWidget(combo);
 
     setCentralWidget(central);
     setWindowTitle("Joystick Mouse");
@@ -49,41 +61,23 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
 void MainWindow::updateJoysticks()
 {
-
-    for (QLabel* label : labels)
-    {
-        layout->removeWidget(label);
-        label->deleteLater();
-    }
-    labels.clear();
+    combo->clear();
 
     int count = 0;
     SDL_JoystickID* Joysticks = SDL_GetJoysticks(&count);
     if (count == 0) 
     {
-        QLabel* noJoysticks = new QLabel("Joystick: None Detected", this);
-        labels.push_back(noJoysticks);
-        layout->addWidget(noJoysticks);
+        combo->addItem("No Joysticks Detected");
+        startBtn->setEnabled(false);
     }
     else 
     {
+        startBtn->setEnabled(true);
         for (int i = 0; i < count; i++)
         {
             const char* name = SDL_GetJoystickNameForID(Joysticks[i]);
-            SDL_GUID guid = SDL_GetJoystickGUIDForID(Joysticks[i]);
-            char guidStr[64];
-            SDL_GUIDToString(guid, guidStr, sizeof(guidStr));
 
-            QLabel* joystickLabel = new QLabel
-            (
-                QString("Joystick %1: %2 (ID %3)")
-                .arg(i)
-                .arg(name ? name : "Unknown")
-                .arg(guidStr)
-                ,this
-            );
-            labels.push_back(joystickLabel);
-            layout->addWidget(joystickLabel);
+            combo->addItem(name ? name : "Unknown", QVariant::fromValue((qulonglong)Joysticks[i]));
         }
     }
 }

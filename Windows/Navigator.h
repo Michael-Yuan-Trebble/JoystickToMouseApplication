@@ -2,6 +2,7 @@
 
 #include <qobject.h>
 #include <memory>
+#include <SDL3/SDL.h>
 
 class ActivateWindow;
 class MainWindow;
@@ -17,7 +18,7 @@ public:
 
 private slots:
 	void onBack();
-	void onActivate();
+	void onActivate(SDL_Joystick* joystick);
 	void onSettings();
 
 private:

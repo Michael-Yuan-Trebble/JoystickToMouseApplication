@@ -16,18 +16,25 @@ ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 	this->resize(800, 800);
 	QWidget* central = new QWidget(this);
 	QVBoxLayout* layout = new QVBoxLayout(central);
+	QHBoxLayout* Clicks = new QHBoxLayout();
+	QHBoxLayout* DPI = new QHBoxLayout();
 	ButtonPressed = new QLabel("Button Pressed: ", this);
 	layout->addWidget(ButtonPressed);
+
+	Visual = new JoystickVisualizer(this);
 
 	checkSettings();
 	loadSettings();
 
-	layout->addWidget(LeftClickLabel);
-	layout->addWidget(RightClickLabel);
+	Clicks->addWidget(LeftClickLabel);
+	Clicks->addWidget(RightClickLabel);
+	layout->addLayout(Clicks);
 
-	Visual = new JoystickVisualizer(this);
+	DPI->addWidget(DPIUpLabel);
+	DPI->addWidget(DPIDownLabel);
+	layout->addLayout(DPI);
+
 	layout->addWidget(Visual);
-
 
 	push = new QPushButton("Go Back", this);
 	connect(push, &QPushButton::clicked, this, &ActivateWindow::goBack);
@@ -39,26 +46,6 @@ ActivateWindow::ActivateWindow(QWidget* parent) : QMainWindow(parent)
 
 	setCentralWidget(central);
 	setWindowTitle("Active");
-
-	// ------------------
-	// Start SDL Joystick Functions
-	// ------------------
-
-	int count = 0;
-	SDL_JoystickID* Joysticks = SDL_GetJoysticks(&count);
-	if (count == 0) 
-	{
-		// TODO: Constantly check for inputted deviced and change accordingly
-		QLabel* Error = new QLabel("No Joystick detected");
-	}
-	else 
-	{
-		setJoystick(0, Joysticks);
-		if (!ControlledJoystick) return;
-		QTimer* timer = new QTimer(this);
-		connect(timer, &QTimer::timeout, this, &ActivateWindow::setMovement);
-		timer->start(10); 
-	}
 }
 
 // ------------------
@@ -74,6 +61,7 @@ void ActivateWindow::checkSettings()
 	{
 		QJsonObject defaults;
 		defaults["sensitivity"] = 0.0005;
+		defaults["dpi_sensitivity"] = 0.0001;
 		defaults["dead_zone"] = 6000;
 		defaults["scroll_sensitivity"] = 0.05;
 
@@ -96,18 +84,36 @@ void ActivateWindow::initSettings()
 {
 	SENSITIVITY = obj["sensitivity"].toDouble();
 	DEAD_ZONE = obj["dead_zone"].toInt();
+
+	Visual->setDeadzone(0.3);
 	SCROLL_SENSITIVITY = obj["scroll_sensitivity"].toDouble();
+	DPI_ADDON = 0.f;
+	DPI_INCREASE = obj["dpi_sensitivity"].toDouble();
 	QJsonObject keybinds = obj["keybinds"].toObject();
 	Left_Click = keybinds["left_click"].toInt();
 	Right_Click = keybinds["right_click"].toInt();
+	DPI_Up = keybinds["DPI_up"].toInt();
+	DPI_Down = keybinds["DPI_down"].toInt();
 
-	if (LeftClickLabel || RightClickLabel) {
+	if (LeftClickLabel || RightClickLabel) 
+	{
 		LeftClickLabel = new QLabel("Left Click Button: " + QString::number(Left_Click), this);
 		RightClickLabel = new QLabel("Right Click Button: " + QString::number(Right_Click), this);
 	}
-	else {
+	else 
+	{
 		LeftClickLabel->setText("Left Click Button: " + QString::number(Left_Click));
 		RightClickLabel->setText("Right Click Button: " + QString::number(Right_Click));
+	}
+	if (DPIDownLabel || DPIUpLabel) 
+	{
+		DPIUpLabel = new QLabel("DPI Up Button: " + QString::number(DPI_Up), this);
+		DPIDownLabel = new QLabel("DPI Down Button: " + QString::number(DPI_Down), this);
+	}
+	else 
+	{
+		DPIUpLabel->setText("DPI Up Button: " + QString::number(DPI_Up));
+		DPIDownLabel->setText("DPI Down Button: " + QString::number(DPI_Down));
 	}
 }
 
@@ -120,13 +126,25 @@ void ActivateWindow::loadSettings()
 	obj = doc.object();
 	initSettings();
 }
-// TODO: Currently only sets joystick to first one detected, make it changeable
-void ActivateWindow::setJoystick(int index, SDL_JoystickID* joysticks) 
+
+void ActivateWindow::setJoystick(SDL_Joystick* joystick)
 {
-	ControlledJoystick = SDL_OpenJoystick(joysticks[index]);
+	ControlledJoystick = joystick;
+	if (ControlledJoystick) 
+	{
+		QTimer* timer = new QTimer(this);
+		connect(timer, &QTimer::timeout, this, &ActivateWindow::setMovement);
+		timer->start(10);
+	}
+	else 
+	{
+		qDebug() << "Activation Window could not set Joystick";
+	}
+
 }
 
-void ActivateWindow::changeCircle(int x, int y) {
+void ActivateWindow::changeCircle(int x, int y) 
+{
 	float normX = static_cast<float>(x) / 32767.0f;
 	float normY = static_cast<float>(y) / 32767.0f;
 	Visual->setPosition(normX, normY);
@@ -151,6 +169,10 @@ void ActivateWindow::setMovement()
 				mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 			if (event.jbutton.button == Right_Click)
 				mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
+			if (event.jbutton.button == DPI_Up)
+				DPI_ADDON += DPI_INCREASE;
+			if (event.jbutton.button == DPI_Down)
+				DPI_ADDON -= DPI_INCREASE;
 
 			if ((int)event.jbutton.button != lastButtonIndex)
 			{
@@ -195,8 +217,8 @@ void ActivateWindow::setMovement()
 		POINT pos;
 		GetCursorPos(&pos);
 
-		pos.x += static_cast<int>(x * SENSITIVITY);
-		pos.y += static_cast<int>(y * SENSITIVITY);
+		pos.x += static_cast<int>(x * SENSITIVITY + DPI_ADDON);
+		pos.y += static_cast<int>(y * SENSITIVITY + DPI_ADDON);
 
 		SetCursorPos(pos.x, pos.y);
 	}

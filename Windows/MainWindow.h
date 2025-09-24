@@ -11,6 +11,7 @@
 class QPushButton;
 class QLabel;
 class QWidget;
+class QComboBox;
 
 class MainWindow : public QMainWindow 
 {
@@ -20,12 +21,12 @@ public:
 	void updateJoysticks();
 
 signals:
-	void start();
+	void start(SDL_Joystick* joystick);
 
 private:
 	std::vector<QLabel*> labels;
 	QPushButton* startBtn;
-	QLabel* allJoysticks;
+	QComboBox* combo;
 	QWidget* central = new QWidget(this);;
 	QVBoxLayout* layout = new QVBoxLayout(central);;
 };

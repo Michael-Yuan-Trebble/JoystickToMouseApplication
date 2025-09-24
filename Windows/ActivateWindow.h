@@ -22,9 +22,13 @@ class ActivateWindow : public QMainWindow
 public:
 	explicit ActivateWindow(QWidget* parent = nullptr);
 	void loadSettings();
+	
+	void setJoystick(SDL_Joystick* joystick);
 
 	Uint8 Left_Click;
 	Uint8 Right_Click;
+	Uint8 DPI_Up;
+	Uint8 DPI_Down;
 
 signals:
 	void goBack();
@@ -40,6 +44,8 @@ private:
 	QLabel* ButtonPressed;
 	QLabel* LeftClickLabel;
 	QLabel* RightClickLabel;
+	QLabel* DPIUpLabel;
+	QLabel* DPIDownLabel;
 
 	QString Filepath;
 	QJsonObject obj;
@@ -57,14 +63,14 @@ private:
 	int DEAD_ZONE;
 	double SENSITIVITY;
 	double SCROLL_SENSITIVITY;
+	double DPI_ADDON;
+	double DPI_INCREASE;
 
 	JoystickVisualizer* Visual;
 
 	// ------------------
 	// Functions
 	// ------------------
-
-	void setJoystick(int index, SDL_JoystickID* joysticks);
 	void setMovement();
 	void checkSettings();
 	void initSettings();

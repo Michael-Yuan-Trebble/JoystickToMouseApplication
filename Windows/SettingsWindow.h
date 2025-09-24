@@ -16,8 +16,6 @@
 #include <qboxlayout.h>
 
 class QPushButton;
-class QLabel;
-class QWidget;
 class QLineEdit;
 
 class SettingsWindow : public QMainWindow
@@ -27,9 +25,8 @@ public:
 	explicit SettingsWindow(QWidget* parent = nullptr);
 
 private slots:
-	void changeLeft();
 
-	void changeRight();
+	void changeKeybind(const QString& keybind, QPushButton* Button);
 
 signals:
 	void settingsClosed();
@@ -40,17 +37,23 @@ protected:
 private:
 	QJsonObject obj;
 
-	Uint8 lastButton = -1;
-
 	void loadSettings();
 
 	void saveKeybind();
 
 	void saveSensitivity();
 
+	void saveDPI();
+
 	QPushButton* leftButton;
 
 	QPushButton* rightButton;
 
+	QPushButton* DPIUpButton;
+
+	QPushButton* DPIDownButton;
+
 	QLineEdit* SensitivityEdit;
+
+	QLineEdit* DPISensitivityEdit;
 };

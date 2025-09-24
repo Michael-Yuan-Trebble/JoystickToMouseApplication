@@ -22,7 +22,7 @@ void Navigator::start()
 // Activation Screen
 // ------------------
 
-void Navigator::onActivate() 
+void Navigator::onActivate(SDL_Joystick* joystick)
 {
 	if (mainWindow) 
 	{
@@ -34,11 +34,12 @@ void Navigator::onActivate()
 	activateWindow = new ActivateWindow();
 	connect(activateWindow, &ActivateWindow::goBack, this, &Navigator::onBack);
 	connect(activateWindow, &ActivateWindow::goSettings, this, &Navigator::onSettings);
+	activateWindow->setJoystick(joystick);
 	activateWindow->show();
 }
 
 // ------------------
-// TODO: Go back to whatever previous screen it was
+// Go back selections
 // ------------------
 
 void Navigator::onBack() 
